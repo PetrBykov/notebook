@@ -1,64 +1,204 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+## API записной книжки
+### Описание
+Над записной книжкой можно проводить следующие операции
+- Постраничный просмотр записей
+- Просмотр конкретной записи по идентификатору (без фото)
+- Просмотр фото конткретной записи по идентификатору записи. Вынесено в отдельную операцию, т.к.:
+Их не всегда нужно получать, если речь идет об обычном просмотре сведений о записях или одной записи. Фото весят больше чем текст и если выдавать фото лишний раз, они могут нагрузить сервер, трафик, и может быть чревато большим временем ожидания для клиента;  
+Если API используется для одностраничного сайта, то фото можно встраивать в HTML как раз по этой отдельной операции.
+- Изменение конкретной записи
+- Удаление конретной записи
+### Использовались для реализации
+- Фреймворк Laravel
+- Xdebug для отладки
+- Плагин MIME Tools в Notepad++ для ручного кодирования в base64
+- Postman для создания POST-запросов во время отладки
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+### Описание API
+- Постраничный просмотр
+GET v1/notebook/count/{count}/page/{page}  
+, где {count} - запрашиваемое число элементов на странице; {page} - запрашиваемая страница
+- Создание новой записи
+POST v1/notebook/
+Должен быть загловок "Accept: application/json", для возврата корректного ответа   
+В теле запроса нужно передавать JSON со следующими полями:
+<table>
+    <tr>
+        <th>Имя</th>
+        <th>Описание</th>
+        <th>Требования</th>
+   </tr>
+   <tr>
+        <td>fullName</td>
+        <td>Полное имя</td>
+        <td>Обязательное, должно быть не пустым</td>
+    </tr>
+    <tr>
+        <td>company</td>
+        <td>Компания</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>phone</td>
+        <td>Телефон</td>
+        <td>Обязательное, должно быть не пустым, иметь 11 цифр с не обязательным символом "+" в начале  </td>
+    </tr>
+    <tr>
+        <td>email</td>
+        <td>Электронная почта</td>
+        <td>Обязательное, должно быть не пустым, должно быть валидной почтой</td>
+    </tr>
+    <tr>
+        <td>dateOfBirth</td>
+        <td>Дата рождения </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>photoAvailable</td>
+        <td>Есть фото</td>
+        <td>Обязательное, должно быть не пустым логическим значением</td>
+    </tr>
+    <tr>
+        <td>photoType</td>
+        <td>Тип фото </td>
+        <td>Обязательное, если photoAvailable указан как true, может принимать значения 'image/png' или 'image/jpeg'</td>
+    </tr>
+    <tr>
+        <td>photoContent</td>
+        <td>Содержимое фото</td>
+        <td>Обязательное, если photoAvailable указан как true, должно быть содержимым фото, закодированным в base64</td>
+    </tr>
+</table>
 
-## About Laravel
+- Просмотр записи  
+GET v1/notebook/id{id}  
+, где {id} - идентификатор записи
+Если запись не найдена, возвращает 404 с сообщением о том, что запись не найдена, в JSON
+Если записать есть, возвращает 200 и JSON со следующими полями:  
+<table>
+    <tr>
+        <th>Имя</th>
+        <th>Описание</th>
+   </tr>
+   <tr>
+        <td>fullName</td>
+        <td>Полное имя</td>
+    </tr>
+    <tr>
+        <td>company</td>
+        <td>Компания</td>
+    </tr>
+    <tr>
+        <td>phone</td>
+        <td>Телефон</td>
+    </tr>
+    <tr>
+        <td>email</td>
+        <td>Электронная почта</td>
+    </tr>
+    <tr>
+        <td>dateOfBirth</td>
+        <td>Дата рождения </td>
+    </tr>
+    <tr>
+        <td>photoAvailable</td>
+        <td>Есть фото</td>
+    </tr>
+</table>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Просмотр фото у записи
+GET v1/notebook/id{id}/getPhoto  
+, где {id} - идентификатор записи
+Если фото есть, возращает заголовок Content-Type с MIME типом фото и содержимое фото в теле ответа
+Если фото нет, возвращает 404 с JSON, что фото нет  
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Изменение конкретной записи
+POST v1/notebook/id{id}
+, где {id} - идентификатор записи
+Должен быть загловок "Accept: application/json", для возврата корректного ответа  
+В теле запроса должен быть JSON. Возможные поля:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+<table>
+    <tr>
+        <th>Имя</th>
+        <th>Описание</th>
+        <th>Требования</th>
+   </tr>
+   <tr>
+        <td>fullName</td>
+        <td>Полное имя</td>
+        <td>Если указывается, должно быть не пустым</td>
+    </tr>
+    <tr>
+        <td>company</td>
+        <td>Компания</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>phone</td>
+        <td>Телефон</td>
+        <td>Если указывается, должно быть не пустым, иметь 11 цифр с не обязательным символом "+" в начале</td>
+    </tr>
+    <tr>
+        <td>email</td>
+        <td>Электронная почта</td>
+        <td>Если указывается, должно быть не пустым, должно быть валидной почтой</td>
+    </tr>
+    <tr>
+        <td>dateOfBirth</td>
+        <td>Дата рождения </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>photoAvailable</td>
+        <td>Есть фото</td>
+        <td>Если указывается, должно быть не пустым логическим значением</td>
+    </tr>
+    <tr>
+        <td>photoType</td>
+        <td>Тип фото </td>
+        <td>Обязательное, если photoAvailable указан как true, может принимать значения 'image/png' или 'image/jpeg'</td>
+    </tr>
+    <tr>
+        <td>photoContent</td>
+        <td>Содержимое фото</td>
+        <td>Обязательное, если photoAvailable указан как true, должно быть содержимым фото, закодированным в base64</td>
+    </tr>
+</table>
 
-## Learning Laravel
+- Удаление записи
+DELETE v1/notebook/id{id}  
+, где {id} - идентификатор записи
+Если успешно удален, возвращает 200 с сообщеем об успехе в JSON
+Если запись не найдена, возвращает 404 с сообщением о том, что запись не найдена, в JSON
+### Тестирование
+Использовались автоматические тесты, так и ручные
+Автоматические тесты (код tests\Feature\notebookTest.php):
+- Проверка корректности ответов на запрос на получение фото.
+Проверяется, что мы получаем корректный ответ на запросы на получение фото у всех, кого должны получить фото, и у тех, у кого не должны получить.
+1) Суммируются все, у кого фото есть, и все, кого фото нет
+2) Делается запросы на получение фото от каждой записи. Параллельно ведется счетчик успехов получения фото и неудач (не найдено)
+3) Если количество успехов совпадает с количеством тех, у кого есть фото, и количество неудач с количеством тех, у кого нет фото, то тест пройден.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Проверка корректности отправляемых данных по API
+1) Делаем новую запись со всех полями (обязательными и необязательными)
+2) Извлекаем данные
+3) Проверяем, что данные сходятся
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Проверка работы валидации новых записей
+1) Отправляем все возможные варианты, когда одно из обязательных полей отсутствует
+2) Отправляем запись, у которой поле "Есть фото" (photoAvailable) равно false
+и не указаны остальные параметры, связанные с фото (photoType, photoContent).
+Такая запись должна считатся валидированной
+3) Отправляем запись, котороый поле "Есть фото" (photoAvailable) равно true
+и не указаны остальные параметры, связанные с фото (photoType, photoContent).
+Такая запись НЕ должна считаться валидированной  
+<br>
+Ручное тестирование:  
+- Проверка коррекности пагинации при запросе постраничного списка записей
+Проверял вручную, вводя значения невалидные текстовые, а не цифровые значения count и page. Возвращал ошибку  
+Вводил валидные значения. Полученные значения сверял с базой данных
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Проверка просмотра фото у записей в HTML тегах
+Создал файл &lt;img src="http://127.0.0.1:8000/api/v1/notebook/id115/getPhoto"/&rt;  
+И открыл через браузер, убедился, что показыват фото в браузере (у записи 115 было фото в базе)

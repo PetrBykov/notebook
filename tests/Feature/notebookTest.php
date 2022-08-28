@@ -146,7 +146,7 @@ class notebookTest extends TestCase
         $response = $this->withHeaders(["Accept" => "application/json"])->postJson(route('notebook.store'), $recordToSend);
         $response->assertStatus(422);
 
-        // Третий пункт
+        // Второй пункт
         $recordToSend = [
             'fullName' => fake()->name(),
             'company' => fake()->company(),
@@ -160,7 +160,7 @@ class notebookTest extends TestCase
         $response = $this->withHeaders(["Accept" => "application/json"])->postJson(route('notebook.store'), $recordToSend);
         $response->assertStatus(200);
 
-        // Четвертый пункт
+        // Третий пункт
         $recordToSend = [
             'fullName' => fake()->name(),
             'company' => fake()->company(),
